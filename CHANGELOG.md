@@ -12,6 +12,10 @@ All notable product changes are tracked here. This project follows [Keep a Chang
 - Task-key-less completions are now matched against a person's open work signals with an AI correlation pass, so differently-worded mentions of the same task still resolve.
 - Digest generation now uses each person's open work signals as AI context and displays them on their digest card.
 
+### Fixed
+
+- `POST /api/digest/generate` now returns a clear `502` JSON error (instead of a bare "Internal Server Error") when AI summarization fails or returns a malformed response for a member.
+
 ## [0.1.0] - 2026-07-18
 
 ### Added
