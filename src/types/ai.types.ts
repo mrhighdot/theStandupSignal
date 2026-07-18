@@ -22,3 +22,17 @@ export interface AiMemberDigest {
   matchesYesterday: boolean;
   confidence: "high" | "medium" | "low";
 }
+
+export interface AiSignalCandidate {
+  id: number;
+  description: string;
+}
+
+export interface AiSignalCorrelationInput {
+  description: string;
+  candidates: AiSignalCandidate[];
+}
+
+export interface AiSignalCorrelation {
+  matchedId: number | null;
+}

@@ -1,6 +1,7 @@
 import { and, eq, ne } from "drizzle-orm";
 import { getDb } from "@db/client";
 import { workSignals } from "@db/schema";
+import { correlateSignal } from "@lib/ai";
 import type { ActivityInput } from "@standup-types/activity.types";
 import type { WorkSignalInput, WorkSignalType } from "@standup-types/work-signal.types";
 
@@ -42,10 +43,24 @@ export async function persistWorkSignals(activities: Array<ActivityInput & { id:
   await resolveCompletedSignals(signals);
 }
 
-/** Closes open signals sharing a completion's task key, since a completion supersedes prior coordination on that task. */
+/** Closes open signals a new completion satisfies: by shared task key when explicit, otherwise via AI correlation against that person's open notes. */
 async function resolveCompletedSignals(signals: WorkSignalInput[]): Promise<void> {
-  const completions = signals.filter((signal): signal is WorkSignalInput & { taskKey: string } => signal.type === "completion" && !!signal.taskKey);
+  const completions = signals.filter((signal) => signal.type === "completion");
   for (const completion of completions) {
-    await getDb().update(workSignals).set({ status: "resolved", resolvedAt: completion.occurredAt }).where(and(eq(workSignals.taskKey, completion.taskKey), eq(workSignals.status, "open"), ne(workSignals.type, "completion")));
+    if (completion.taskKey) {
+      await getDb().update(workSignals).set({ status: "resolved", resolvedAt: completion.occurredAt }).where(and(eq(workSignals.taskKey, completion.taskKey), eq(workSignals.status, "open"), ne(workSignals.type, "completion")));
+      continue;
+    }
+    await resolveByCorrelation(completion);
   }
+}
+
+/** Falls back to AI correlation when a completion has no explicit task key, matching it against the same person's open notes. */
+async function resolveByCorrelation(completion: WorkSignalInput): Promise<void> {
+  const db = getDb();
+  const candidates = await db.select({ id: workSignals.id, description: workSignals.description }).from(workSignals).where(and(eq(workSignals.memberId, completion.memberId), eq(workSignals.status, "open"), ne(workSignals.type, "completion")));
+  if (!candidates.length) return;
+  const { matchedId } = await correlateSignal({ description: completion.description, candidates });
+  if (matchedId === null) return;
+  await db.update(workSignals).set({ status: "resolved", resolvedAt: completion.occurredAt }).where(eq(workSignals.id, matchedId));
 }
