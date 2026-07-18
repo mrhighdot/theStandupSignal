@@ -1,12 +1,8 @@
-import dotenv from "dotenv";
 import { Hono } from "hono";
 import { api } from "@routes/api";
 import { fragments } from "@routes/fragments";
 import { dashboardPage } from "@routes/pages/dashboard";
 import { blockerTrendPage } from "@routes/pages/blocker-trend";
-
-// Local project settings must win over a stale shell DATABASE_URL from another app.
-dotenv.config({ override: true });
 
 export const app = new Hono();
 
