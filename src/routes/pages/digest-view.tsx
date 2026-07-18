@@ -8,7 +8,10 @@ export function digestPersonCard(person: DigestPerson): string {
       ? `<p class="mt-4 border-l-4 border-stone-500 bg-stone-200 px-4 py-3 text-sm"><b>NEW BLOCKER</b><br>${escapeHtml(person.blockerDescription ?? "")}</p>`
       : `<p class="mt-4 text-xs font-bold uppercase tracking-wider text-emerald-700">No blocker detected</p>`;
   const confidence = person.blockerStatus !== "none" && person.confidence === "low" ? `<span class="ml-2 text-xs font-medium text-stone-500">low confidence</span>` : "";
-  return `<article class="signal-rule py-6"><div class="flex items-baseline justify-between gap-4"><h2 class="text-xl font-black">${escapeHtml(person.member)}</h2><span class="text-xs font-bold uppercase tracking-widest text-stone-500">${person.blockerStatus}</span></div><p class="mt-2 max-w-3xl text-lg leading-relaxed">${escapeHtml(person.summary)}</p>${blocker}${confidence}</article>`;
+  const openSignals = person.openWorkSignals.length
+    ? `<ul class="mt-4 flex flex-wrap gap-2">${person.openWorkSignals.map((signal) => `<li class="rounded-full border border-stone-300 px-3 py-1 text-xs font-bold uppercase tracking-wide text-stone-600">${signal.type.replace("_", " ")}</li>`).join("")}</ul>`
+    : "";
+  return `<article class="signal-rule py-6"><div class="flex items-baseline justify-between gap-4"><h2 class="text-xl font-black">${escapeHtml(person.member)}</h2><span class="text-xs font-bold uppercase tracking-widest text-stone-500">${person.blockerStatus}</span></div><p class="mt-2 max-w-3xl text-lg leading-relaxed">${escapeHtml(person.summary)}</p>${blocker}${confidence}${openSignals}</article>`;
 }
 
 /** Escapes AI and user-provided copy before inserting it into HTML fragments. */

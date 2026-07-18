@@ -1,7 +1,7 @@
 import { and, eq, gte } from "drizzle-orm";
 import { Hono } from "hono";
 import { getDb } from "@db/client";
-import { blockers, digests, rawActivity, teamMembers } from "@db/schema";
+import { blockers, digests, rawActivity, teamMembers, workSignals } from "@db/schema";
 import { summarizeMember } from "@lib/ai";
 import { closeStaleBlockers, recordDetectedBlocker } from "@lib/blockers";
 import type { DigestPayload, DigestPerson } from "@standup-types/digest.types";
@@ -17,10 +17,11 @@ digestGenerateRoute.post("/", async (c) => {
   for (const member of members) {
     const activity = await db.select().from(rawActivity).where(and(eq(rawActivity.memberId, member.id), gte(rawActivity.occurredAt, since)));
     const previous = await db.select().from(blockers).where(and(eq(blockers.memberId, member.id), eq(blockers.stillOpen, true)));
-    const ai = await summarizeMember({ member: member.displayName, activity: activity.map((item) => ({ type: item.type, content: item.content, time: item.occurredAt.toISOString() })), yesterdaysOpenBlockers: previous.map((item) => item.description) });
+    const openSignals = await db.select().from(workSignals).where(and(eq(workSignals.memberId, member.id), eq(workSignals.status, "open")));
+    const ai = await summarizeMember({ member: member.displayName, activity: activity.map((item) => ({ type: item.type, content: item.content, time: item.occurredAt.toISOString() })), yesterdaysOpenBlockers: previous.map((item) => item.description), openWorkSignals: openSignals.map((item) => item.description) });
     const blocker = ai.blockerDetected && ai.blockerDescription && ai.blockerNormalizedKey ? { description: ai.blockerDescription, normalizedKey: ai.blockerNormalizedKey, confidence: ai.confidence } : null;
     const state = await recordDetectedBlocker(member.id, blocker, date);
-    people.push({ ...ai, memberId: member.id, blockerStatus: state.status, repeatCount: state.repeatCount });
+    people.push({ ...ai, memberId: member.id, blockerStatus: state.status, repeatCount: state.repeatCount, openWorkSignals: openSignals.map((item) => ({ type: item.type, description: item.description })) });
   }
   await closeStaleBlockers(members.map((member) => member.id), date);
   const payload: DigestPayload = { date, people, generatedAt: new Date().toISOString() };

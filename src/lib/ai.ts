@@ -3,7 +3,7 @@ import type { AiMemberDigest, AiMemberInput, AiSignalCorrelation, AiSignalCorrel
 const systemPrompt = `You produce precise async standup digests. Return one JSON object only; no markdown or preamble.
 Only mark blocker_detected true for an explicit, concrete issue preventing progress. Never flag a complaint, uncertainty, or passing status mention as a blocker. Precision is more important than recall.
 When there is a blocker, create a stable short kebab-case canonical key based on the impediment, ignoring wording. Examples: "waiting for design review of ticket UI" -> "design-review-ticket-ui"; "cannot access staging" -> "staging-access-permissions"; "API quota is stopping deploys" -> "api-rate-limit-increase".
-Use high confidence for explicit blockers, medium for strongly implied blockers, and low only when uncertain. The response schema keys are member, summary, blocker_detected, blocker_description, blocker_normalized_key, matches_yesterday, confidence.`;
+Use high confidence for explicit blockers, medium for strongly implied blockers, and low only when uncertain. You may also receive this person's currently open work signals (assignments, acknowledgements, progress notes, blockers, review requests) as background context: use them to write a more accurate summary, but never treat one as today's activity or as grounds for a blocker on its own. The response schema keys are member, summary, blocker_detected, blocker_description, blocker_normalized_key, matches_yesterday, confidence.`;
 
 const correlationPrompt = `You match a new coordination note against a short list of candidate notes from the same person's still-open work signals. Return one JSON object only; no markdown or preamble.
 Decide whether the new note describes finishing or superseding the same underlying task as exactly one candidate. Precision is more important than recall: if no candidate is clearly the same task, return null.
@@ -18,7 +18,7 @@ export async function summarizeMember(input: AiMemberInput): Promise<AiMemberDig
       model: process.env.AI_MODEL ?? "gpt-5.6",
       temperature: 0.1,
       response_format: { type: "json_object" },
-      messages: [{ role: "system", content: systemPrompt }, { role: "user", content: JSON.stringify({ member: input.member, activity: input.activity, yesterdays_open_blockers: input.yesterdaysOpenBlockers }) }],
+      messages: [{ role: "system", content: systemPrompt }, { role: "user", content: JSON.stringify({ member: input.member, activity: input.activity, yesterdays_open_blockers: input.yesterdaysOpenBlockers, open_work_signals: input.openWorkSignals }) }],
     }),
   });
   if (!response.ok) throw new Error(`AI completion failed (${response.status}): ${await response.text()}`);
