@@ -3,6 +3,7 @@
 - One Bun + Hono application: API and server-rendered pages share `src/index.ts`.
 - `src/routes/`: thin HTTP handlers; `src/lib/`: integrations and business logic; `src/types/`: shared shapes only; `src/db/`: Drizzle client/schema; `src/views/`: HTML layout.
 - Pages: `routes/pages/dashboard.tsx`, `digest-view.tsx`, `blocker-trend.tsx`. API routes: GitHub/Discord sync, digest generation/publishing, digest-by-date, active blockers.
+- Blocker trend re-sorts (repeat count / first seen) via `GET /fragments/blockers?sort=`, swapping just the table body; `loadSortedBlockers`/`blockerRows` in `blocker-trend.tsx` are shared between the full page and that fragment.
 - `team_members`: GitHub/Discord identifiers and display name.
 - `raw_activity`: member FK, source, activity type, text, occurrence and sync timestamps.
 - `digests`: date, structured JSON payload, publish timestamp.
