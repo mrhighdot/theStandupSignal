@@ -7,3 +7,4 @@
 - Generate stable, concise, kebab-case keys based on the impediment, not incidental wording.
 - Example keys: `design-review-ticket-ui`, `staging-access-permissions`, `api-rate-limit-increase`.
 - Surface low confidence as muted UI, not as an equally certain blocker.
+- Task-key-less completions ask a second, narrower prompt: match against a person's own open signal descriptions, returning a single `matched_id` or `null`. Prefer `null` over a guess.
