@@ -8,6 +8,13 @@
       "when": 1784412583233,
       "tag": "0000_jazzy_wallop",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1784414471961,
+      "tag": "0001_boring_inertia",
+      "breakpoints": true
     }
   ]
 }

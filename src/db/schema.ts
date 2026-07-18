@@ -36,3 +36,18 @@ export const blockers = mysqlTable("blockers", {
   stillOpen: boolean("still_open").notNull().default(true),
   repeatCount: int("repeat_count").notNull().default(1),
 });
+
+export const workSignals = mysqlTable("work_signals", {
+  id: int("id").autoincrement().primaryKey(),
+  memberId: int("member_id").notNull().references(() => teamMembers.id),
+  rawActivityId: int("raw_activity_id").references(() => rawActivity.id),
+  source: mysqlEnum("source", ["github", "discord"]).notNull(),
+  type: mysqlEnum("type", ["assignment", "acknowledgement", "progress", "blocker", "review_request", "completion"]).notNull(),
+  description: text("description").notNull(),
+  taskKey: varchar("task_key", { length: 255 }),
+  confidence: mysqlEnum("confidence", ["high", "medium", "low"]).notNull(),
+  status: mysqlEnum("status", ["open", "resolved"]).notNull().default("open"),
+  occurredAt: datetime("occurred_at").notNull(),
+  resolvedAt: datetime("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
