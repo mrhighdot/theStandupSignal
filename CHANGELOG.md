@@ -7,6 +7,8 @@ All notable product changes are tracked here. This project follows [Keep a Chang
 ### Added
 
 - Work-signal foundation for interpreting team coordination activity from chat and source control.
+- GitHub and Discord syncs now extract work signals from synced activity and persist them; matching completions auto-resolve open assignment, acknowledgement, progress, blocker, and review-request signals for the same task.
+- Dashboard shows open work signals alongside the digest.
 
 ## [0.1.0] - 2026-07-18
 
