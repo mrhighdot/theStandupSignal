@@ -1,3 +1,6 @@
+import { and, eq, ne } from "drizzle-orm";
+import { getDb } from "@db/client";
+import { workSignals } from "@db/schema";
 import type { ActivityInput } from "@standup-types/activity.types";
 import type { WorkSignalInput, WorkSignalType } from "@standup-types/work-signal.types";
 
@@ -27,4 +30,22 @@ export function extractExplicitWorkSignals(activity: ActivityInput): WorkSignalI
 function extractTaskKey(content: string): string | undefined {
   const match = content.match(/(?:#|\b)([A-Z][A-Z0-9]+-\d+|\d{1,6})\b/);
   return match?.[1]?.toLowerCase();
+}
+
+/** Extracts and persists work signals for newly synced activity, then resolves anything a completion satisfies. */
+export async function persistWorkSignals(activities: Array<ActivityInput & { id: number }>): Promise<void> {
+  const signals = activities.flatMap((activity) =>
+    extractExplicitWorkSignals(activity).map((signal) => ({ ...signal, rawActivityId: activity.id })),
+  );
+  if (!signals.length) return;
+  await getDb().insert(workSignals).values(signals);
+  await resolveCompletedSignals(signals);
+}
+
+/** Closes open signals sharing a completion's task key, since a completion supersedes prior coordination on that task. */
+async function resolveCompletedSignals(signals: WorkSignalInput[]): Promise<void> {
+  const completions = signals.filter((signal): signal is WorkSignalInput & { taskKey: string } => signal.type === "completion" && !!signal.taskKey);
+  for (const completion of completions) {
+    await getDb().update(workSignals).set({ status: "resolved", resolvedAt: completion.occurredAt }).where(and(eq(workSignals.taskKey, completion.taskKey), eq(workSignals.status, "open"), ne(workSignals.type, "completion")));
+  }
 }
