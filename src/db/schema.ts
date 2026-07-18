@@ -1,4 +1,4 @@
-import { boolean, datetime, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, datetime, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export const teamMembers = mysqlTable("team_members", {
   id: int("id").autoincrement().primaryKey(),
@@ -13,10 +13,11 @@ export const rawActivity = mysqlTable("raw_activity", {
   memberId: int("member_id").notNull().references(() => teamMembers.id),
   source: mysqlEnum("source", ["github", "discord"]).notNull(),
   type: mysqlEnum("type", ["commit", "pr_open", "pr_merge", "review_comment", "chat_message"]).notNull(),
+  externalId: varchar("external_id", { length: 255 }).notNull(),
   content: text("content").notNull(),
   occurredAt: datetime("occurred_at").notNull(),
   syncedAt: timestamp("synced_at").defaultNow().notNull(),
-});
+}, (table) => [index("raw_activity_source_external_id_idx").on(table.source, table.externalId)]);
 
 export const digests = mysqlTable("digests", {
   id: int("id").autoincrement().primaryKey(),

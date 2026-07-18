@@ -5,6 +5,7 @@ export interface ActivityInput {
   memberId: number;
   source: ActivitySource;
   type: ActivityType;
+  externalId: string;
   content: string;
   occurredAt: Date;
 }

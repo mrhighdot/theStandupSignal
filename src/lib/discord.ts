@@ -15,7 +15,7 @@ export async function fetchDiscordActivity(memberIdByHandle: Map<string, number>
     return [...messages.values()].flatMap((message) => {
       const memberId = memberIdByHandle.get(message.author.username.toLowerCase());
       if (!memberId || message.author.bot || message.createdAt < since || !message.content.trim()) return [];
-      return [{ memberId, source: "discord" as const, type: "chat_message" as const, content: message.content, occurredAt: message.createdAt }];
+      return [{ memberId, source: "discord" as const, type: "chat_message" as const, externalId: `message:${message.id}`, content: message.content, occurredAt: message.createdAt }];
     });
   } finally { client.destroy(); }
 }
