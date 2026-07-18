@@ -1,6 +1,8 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
+
+dotenv.config({ override: true });
 
 function createDatabase(connectionString: string) {
   return drizzle({ client: mysql.createPool(connectionString) });
