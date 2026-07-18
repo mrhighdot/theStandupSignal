@@ -4,7 +4,7 @@
 - `src/routes/`: thin HTTP handlers; `src/lib/`: integrations and business logic; `src/types/`: shared shapes only; `src/db/`: Drizzle client/schema; `src/views/`: HTML layout.
 - Pages: `routes/pages/dashboard.tsx`, `digest-view.tsx`, `blocker-trend.tsx`. API routes: GitHub/Discord sync, digest generation/publishing, digest-by-date, active blockers.
 - `team_members`: GitHub/Discord identifiers and display name.
-- `raw_activity`: member FK, source, activity type, text, occurrence and sync timestamps.
+- `raw_activity`: member FK, source, activity type, an `external_id` unique per source (commit sha, PR number+event, review comment id, or Discord message id), text, occurrence and sync timestamps. `lib/activity.ts`'s `persistNewActivity` is the only writer: it checks `external_id` against what's already stored for that source before inserting, so re-running a sync never duplicates rows or re-extracts work signals.
 - `digests`: date, structured JSON payload, publish timestamp.
 - `blockers`: member FK, description, AI canonical key, first/last seen, open state, repeat count. Regenerating the same day must not increment a repeat count.
 - `work_signals`: coordination events inferred from activity (assignment, acknowledgement, progress, blocker, review request, completion), their optional task key, confidence, and open/resolved lifecycle.
