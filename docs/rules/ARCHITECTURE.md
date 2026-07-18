@@ -7,4 +7,6 @@
 - `raw_activity`: member FK, source, activity type, text, occurrence and sync timestamps.
 - `digests`: date, structured JSON payload, publish timestamp.
 - `blockers`: member FK, description, AI canonical key, first/last seen, open state, repeat count. Regenerating the same day must not increment a repeat count.
+- `work_signals`: coordination events inferred from activity (assignment, acknowledgement, progress, blocker, review request, completion), their optional task key, confidence, and open/resolved lifecycle.
+- `GET /api/signals/open` returns open work signals newest-first; signal extraction stays in `lib/work-signals.ts`.
 - Keep a blocker open through one missing digest; close only after two absent digest runs.

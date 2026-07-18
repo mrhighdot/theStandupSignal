@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getDb } from "@db/client";
 import { blockers, digests, teamMembers } from "@db/schema";
+import { workSignals } from "@db/schema";
 import { toBlockerRecord } from "@lib/blockers";
 import { chatSyncRoute } from "@routes/sync.chat";
 import { digestGenerateRoute } from "@routes/digest.generate";
@@ -23,4 +24,9 @@ api.get("/digest/:date", async (c) => {
 api.get("/blockers/active", async (c) => {
   const rows = await getDb().select({ blocker: blockers, member: teamMembers }).from(blockers).innerJoin(teamMembers, eq(blockers.memberId, teamMembers.id)).where(eq(blockers.stillOpen, true)).orderBy(desc(blockers.repeatCount));
   return c.json(rows.map(({ blocker, member }) => ({ ...toBlockerRecord(blocker), member: member.displayName })));
+});
+
+api.get("/signals/open", async (c) => {
+  const rows = await getDb().select({ signal: workSignals, member: teamMembers }).from(workSignals).innerJoin(teamMembers, eq(workSignals.memberId, teamMembers.id)).where(eq(workSignals.status, "open")).orderBy(desc(workSignals.occurredAt));
+  return c.json(rows.map(({ signal, member }) => ({ ...signal, member: member.displayName })));
 });
