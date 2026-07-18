@@ -10,6 +10,7 @@ export interface AiMemberInput {
   member: string;
   activity: AiActivity[];
   yesterdaysOpenBlockers: string[];
+  openWorkSignals: string[];
 }
 
 export interface AiMemberDigest {
