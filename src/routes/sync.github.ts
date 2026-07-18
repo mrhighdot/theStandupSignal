@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { getDb } from "@db/client";
 import { rawActivity, teamMembers } from "@db/schema";
 import { fetchGitHubActivity } from "@lib/github";
+import { persistWorkSignals } from "@lib/work-signals";
 
 export const githubSyncRoute = new Hono();
 
@@ -10,6 +11,12 @@ githubSyncRoute.get("/", async (c) => {
   const members = await db.select().from(teamMembers);
   const idsByHandle = new Map(members.flatMap((member) => member.githubHandle ? [[member.githubHandle.toLowerCase(), member.id] as const] : []));
   const activity = await fetchGitHubActivity(idsByHandle, new Date(Date.now() - 24 * 60 * 60 * 1000));
-  if (activity.length) await db.insert(rawActivity).values(activity);
+  if (activity.length) {
+    const ids = await db.insert(rawActivity).values(activity).$returningId();
+    await persistWorkSignals(activity.flatMap((item, index) => {
+      const id = ids[index]?.id;
+      return id !== undefined ? [{ ...item, id }] : [];
+    }));
+  }
   return c.json({ synced: activity.length, source: "github" });
 });

@@ -12,6 +12,6 @@ export function digestPersonCard(person: DigestPerson): string {
 }
 
 /** Escapes AI and user-provided copy before inserting it into HTML fragments. */
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
