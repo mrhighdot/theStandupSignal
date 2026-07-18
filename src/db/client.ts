@@ -12,5 +12,8 @@ let database: ReturnType<typeof createDatabase> | undefined;
 export function getDb(): ReturnType<typeof createDatabase> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is required to use Standup Signal's data routes.");
+  if (!connectionString.startsWith("mysql://")) {
+    throw new Error("DATABASE_URL must be a MySQL URL (for example, mysql://user:password@127.0.0.1:3306/standup_signal), not a SQLite file path.");
+  }
   return database ?? (database = createDatabase(connectionString));
 }
