@@ -18,7 +18,13 @@ digestGenerateRoute.post("/", async (c) => {
     const activity = await db.select().from(rawActivity).where(and(eq(rawActivity.memberId, member.id), gte(rawActivity.occurredAt, since)));
     const previous = await db.select().from(blockers).where(and(eq(blockers.memberId, member.id), eq(blockers.stillOpen, true)));
     const openSignals = await db.select().from(workSignals).where(and(eq(workSignals.memberId, member.id), eq(workSignals.status, "open")));
-    const ai = await summarizeMember({ member: member.displayName, activity: activity.map((item) => ({ type: item.type, content: item.content, time: item.occurredAt.toISOString() })), yesterdaysOpenBlockers: previous.map((item) => item.description), openWorkSignals: openSignals.map((item) => item.description) });
+    let ai;
+    try {
+      ai = await summarizeMember({ member: member.displayName, activity: activity.map((item) => ({ type: item.type, content: item.content, time: item.occurredAt.toISOString() })), yesterdaysOpenBlockers: previous.map((item) => item.description), openWorkSignals: openSignals.map((item) => item.description) });
+    } catch (err) {
+      console.error(`Digest generation failed while summarizing ${member.displayName} for ${date}:`, err);
+      return c.json({ error: `AI summarization failed for ${member.displayName}.`, date, membersProcessed: people.length }, 502);
+    }
     const blocker = ai.blockerDetected && ai.blockerDescription && ai.blockerNormalizedKey ? { description: ai.blockerDescription, normalizedKey: ai.blockerNormalizedKey, confidence: ai.confidence } : null;
     const state = await recordDetectedBlocker(member.id, blocker, date);
     people.push({ ...ai, memberId: member.id, blockerStatus: state.status, repeatCount: state.repeatCount, openWorkSignals: openSignals.map((item) => ({ type: item.type, description: item.description })) });
