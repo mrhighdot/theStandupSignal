@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "types": ["bun"],
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@routes/*": ["src/routes/*"],
+      "@db/*": ["src/db/*"],
+      "@lib/*": ["src/lib/*"],
+      "@types/*": ["src/types/*"],
+      "@standup-types/*": ["src/types/*"],
+      "@views/*": ["src/views/*"]
+    },
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true
+  }
+}
