@@ -18,6 +18,8 @@ All notable product changes are tracked here. This project follows [Keep a Chang
 
 - GitHub and Discord syncs no longer create duplicate `raw_activity` rows (or re-extract duplicate work signals) when re-run over an overlapping time window; each row now carries a per-source `external_id` checked before insert.
 - `POST /api/digest/generate` now returns a clear `502` JSON error (instead of a bare "Internal Server Error") when AI summarization fails or returns a malformed response for a member.
+- `bun run db:seed` now exits on its own instead of hanging after it finishes.
+- `.env.example` no longer has duplicate, conflicting `PORT`/`DATABASE_URL` lines.
 
 ## [0.1.0] - 2026-07-18
 

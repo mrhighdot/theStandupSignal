@@ -19,4 +19,5 @@ export async function seedDemoData(): Promise<void> {
 if (import.meta.main) {
   await seedDemoData();
   console.log("Seeded Standup Signal demo data.");
+  process.exit(0);
 }
